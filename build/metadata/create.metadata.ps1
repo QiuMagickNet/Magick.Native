@@ -87,7 +87,7 @@ function createLibrariesDocument($destination) {
     $commit = [IO.File]::ReadAllText("commit.txt").Trim()
 
     Add-Content $fileName "# Libraries"
-    Add-Content $fileName "Magick.Native [$commit](https://github.com/dlemstra/Magick.Native/commit/$commit) is build with the following libraries:"
+    Add-Content $fileName "Magick.Native [$commit](https://github.com/QiuMagickNet/Magick.Native/commit/$commit) is build with the following libraries:"
     Add-Content $fileName ""
 
     writeImageMagickVersion $fileName

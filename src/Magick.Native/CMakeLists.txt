@@ -10,7 +10,7 @@ set(DEPENDENCIES_DIR "/tmp/dependencies")
 include_directories(. ${DEPENDENCIES_DIR}/include /tmp/ImageMagick/include/ImageMagick-7)
 link_directories(${DEPENDENCIES_DIR}/lib)
 
-if (NOT PLATFORM STREQUAL "MACOS")
+if (NOT PLATFORM STREQUAL "MACOS" AND NOT PLATFORM STREQUAL "ANDROID")
   link_directories(${DEPENDENCIES_DIR}/lib/x86_64-linux-gnu)
 endif()
 
@@ -57,6 +57,9 @@ else()
     set(LIBZIP libzip.a)
 
     set(LIBRESOLV -lresolv)
+    if (PLATFORM STREQUAL "ANDROID")
+        unset(LIBRESOLV)
+    endif()
 endif()
 
 if (PLATFORM STREQUAL "MACOS")
@@ -64,6 +67,14 @@ if (PLATFORM STREQUAL "MACOS")
     set(LIBINTL ${DEPENDENCIES_DIR}/lib/libintl.a)
     set(CMAKE_MACOSX_RPATH 1)
     set(STDCPLUSPLUS stdc++)
+elseif (PLATFORM STREQUAL "ANDROID")
+    find_package(Threads REQUIRED)
+
+    set(STDCPLUSPLUS -static-libstdc++)
+    set(LIBTHREAD Threads::Threads)
+    if (OPENMP)
+        set(LIBOPENMP -fopenmp)
+    endif()
 elseif (NOT PLATFORM STREQUAL "WASM")
     find_package(Threads REQUIRED)
 

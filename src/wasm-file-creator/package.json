@@ -2,7 +2,7 @@
   "name": "wasm-file-creator",
   "version": "1.0.0",
   "description": "Create wasm files",
-  "repository": "https://github.com/dlemstra/Magick.Native",
+  "repository": "https://github.com/QiuMagickNet/Magick.Native",
   "main": "index.js",
   "scripts": {
     "build": "tsc -p .",

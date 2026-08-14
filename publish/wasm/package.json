@@ -1,5 +1,5 @@
 {
-  "name": "@dlemstra/magick-native",
+  "name": "@qiumagicknet/magick-native",
   "version": "",
   "type": "module",
   "exports": {
@@ -13,7 +13,7 @@
   "types": "./magick.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dlemstra/Magick.Native.git"
+    "url": "git+https://github.com/QiuMagickNet/Magick.Native.git"
   },
   "author": "Dirk Lemstra",
   "license": "Apache-2.0",

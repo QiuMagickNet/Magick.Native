@@ -329,6 +329,52 @@ jobs:
           name: windows-${{matrix.quantum}}${{matrix.hdri_flag}}-${{matrix.architecture}}${{matrix.openmp_flag}}
           path: artifacts
 
+  android:
+    name: android ${{matrix.quantum}} (${{matrix.architecture}})
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [ arm64, arm, x64, x86 ]
+        quantum: [ Q8, Q16, Q16-HDRI ]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Update ImageMagick.commit to latest commit
+        run: ./update.imagemagick.sh
+        if: github.event_name == 'schedule'
+        working-directory: src/ImageMagick
+
+      - name: Clone ImageMagick libraries
+        run: ./checkout.sh --no-configure --dependencies-artifact android-${{matrix.architecture}}-static.zip
+        working-directory: src/ImageMagick
+
+      - name: Install build tools
+        run: ./install.build-tools.sh
+        working-directory: build/android-${{matrix.architecture}}
+
+      - name: Build ImageMagick
+        run: ../../../build/shared/build.imagemagick.sh android ${{matrix.architecture}} ${{matrix.quantum}} noOpenMP
+        working-directory: src/ImageMagick/ImageMagick
+
+      - name: Build Native
+        run: ../../build/shared/build.native.sh android ${{matrix.architecture}} ${{matrix.quantum}} noOpenMP
+        working-directory: src/Magick.Native
+
+      - name: Copy Native
+        run: ../../build/shared/copy.native.sh ../../artifacts android ${{matrix.architecture}} ${{matrix.quantum}} noOpenMP
+        working-directory: src/Magick.Native
+
+      - name: Upload library
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: android-${{matrix.quantum}}-${{matrix.architecture}}
+          path: artifacts
+
   verify-linux-x64:
     name: Verify Linux (x64)
     runs-on: ubuntu-24.04
@@ -513,6 +559,7 @@ jobs:
       - verify-macos-x64
       - wasm
       - windows
+      - android
     outputs:
       version: ${{steps.set-version.outputs.version}}
 
@@ -538,7 +585,7 @@ jobs:
           cd artifacts
 
           echo "# Libraries" >> libraries.md
-          echo "Magick.Native [$commit](https://github.com/dlemstra/Magick.Native/commit/$commit) is build with the following libraries:" >> libraries.md
+          echo "Magick.Native [$commit](https://github.com/QiuMagickNet/Magick.Native/commit/$commit) is build with the following libraries:" >> libraries.md
           echo "" >> libraries.md
           sed -n 's/^\[ \(.*\) \]/- \1/p' ../NOTICE.txt >> libraries.md
 
@@ -613,7 +660,7 @@ jobs:
         with:
           node-version: 22
           registry-url: https://npm.pkg.github.com
-          scope: '@dlemstra'
+          scope: '@qiumagicknet'
 
       - name: Create NPM package
         env:
