@@ -44,8 +44,82 @@ jobs:
         run: ../../build/shared/copy.native.sh ../../artifacts android ${{matrix.architecture}} ${{matrix.quantum}} noOpenMP
         working-directory: src/Magick.Native
 
+      - name: Create resources
+        shell: bash
+        run: |
+          mkdir -p resources
+          cp config/*.xml resources/ 2>/dev/null || true
+          cp ../../Magick.Native/Resources/xml/*.xml resources/ 2>/dev/null || true
+          if ls resources/*.xml >/dev/null 2>&1; then
+            (cd resources && zip -r ../resources-${{matrix.quantum}}-${{matrix.architecture}}.zip .)
+          fi
+        working-directory: src/ImageMagick/ImageMagick
+
       - name: Upload library
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: android-${{matrix.quantum}}-${{matrix.architecture}}
           path: artifacts
+
+      - name: Upload resources
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: resources-${{matrix.quantum}}-${{matrix.architecture}}
+          path: src/ImageMagick/ImageMagick/resources-${{matrix.quantum}}-${{matrix.architecture}}.zip
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish android release
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    needs:
+      - android
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          path: artifacts
+          merge-multiple: false
+
+      - name: Create release zips
+        shell: bash
+        run: |
+          mkdir zips
+          for folder in artifacts/android-*; do
+            name=$(basename "$folder")
+            (cd "$folder" && zip -r ../../zips/$name.zip .)
+          done
+          for folder in artifacts/resources-*; do
+            name=$(basename "$folder")
+            (cd "$folder" && zip -r ../../zips/$name.zip .)
+          done
+
+      - name: Set version
+        shell: bash
+        run: echo "VERSION=$(date +'%Y.%m.%d.%H%M')" >> $GITHUB_ENV
+
+      - name: Create tag
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag $VERSION
+          git push origin $VERSION
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{github.token}}
+        shell: bash
+        run: |
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --notes "Android arm64-v8a and x86_64 native libraries." \
+            zips/*.zip
