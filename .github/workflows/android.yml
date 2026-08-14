@@ -50,9 +50,6 @@ jobs:
           mkdir -p resources
           cp config/*.xml resources/ 2>/dev/null || true
           cp ../../Magick.Native/Resources/xml/*.xml resources/ 2>/dev/null || true
-          if ls resources/*.xml >/dev/null 2>&1; then
-            (cd resources && zip -r ../resources-${{matrix.quantum}}-${{matrix.architecture}}.zip .)
-          fi
         working-directory: src/ImageMagick/ImageMagick
 
       - name: Upload library
@@ -65,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: resources-${{matrix.quantum}}-${{matrix.architecture}}
-          path: src/ImageMagick/ImageMagick/resources-${{matrix.quantum}}-${{matrix.architecture}}.zip
+          path: src/ImageMagick/ImageMagick/resources
           if-no-files-found: error
 
   publish-release:
