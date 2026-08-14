@@ -71,6 +71,7 @@ elseif (PLATFORM STREQUAL "ANDROID")
     find_package(Threads REQUIRED)
 
     set(STDCPLUSPLUS -static-libstdc++)
+    set(LIBINTL ${DEPENDENCIES_DIR}/lib/libintl.a)
     set(LIBTHREAD Threads::Threads)
     if (OPENMP)
         set(LIBOPENMP -fopenmp)
