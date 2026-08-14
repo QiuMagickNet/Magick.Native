@@ -100,6 +100,17 @@ jobs:
             (cd "$folder" && zip -r ../../zips/$name.zip .)
           done
 
+      - name: Create metadata
+        shell: bash
+        run: |
+          commit=$(git rev-parse HEAD)
+          mkdir -p artifacts/metadata
+          echo "# Libraries" > artifacts/metadata/libraries.md
+          echo "Magick.Native [$commit](https://github.com/QiuMagickNet/Magick.Native/commit/$commit) is build with the following libraries:" >> artifacts/metadata/libraries.md
+          echo "" >> artifacts/metadata/libraries.md
+          sed -n 's/^\[ \(.*\) \]/- \1/p' NOTICE.txt >> artifacts/metadata/libraries.md
+          (cd artifacts/metadata && zip -r ../../zips/metadata.zip .)
+
       - name: Set version
         shell: bash
         run: echo "VERSION=$(date +'%Y.%m.%d.%H%M')" >> $GITHUB_ENV
