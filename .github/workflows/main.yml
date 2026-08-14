@@ -332,11 +332,13 @@ jobs:
   android:
     name: android ${{matrix.quantum}} (${{matrix.architecture}})
     runs-on: ubuntu-24.04
+    container:
+      image: ubuntu:20.04
 
     strategy:
       fail-fast: false
       matrix:
-        architecture: [ arm64, arm, x64, x86 ]
+        architecture: [ arm64, x64 ]
         quantum: [ Q8, Q16, Q16-HDRI ]
 
     steps:

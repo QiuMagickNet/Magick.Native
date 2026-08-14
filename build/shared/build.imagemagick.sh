@@ -26,13 +26,17 @@ buildImageMagick() {
   if [ "$openmp" == "OpenMP" ]; then
     unset disable_openmp
   fi
+  local jxl_option="--with-jxl"
+  if [ "$config" == "android" ]; then
+    unset jxl_option
+  fi
   if [ "$config" == "wasm" ]; then
     unset enable_64bit_channel_masks
   elif [ "$config" == "android" ] && { [ "$architecture" == "arm" ] || [ "$architecture" == "x86" ]; }; then
     unset enable_64bit_channel_masks
   fi
 
-  $CONFIGURE $CONFIGURE_OPTIONS --disable-shared --disable-opencl --disable-dpc --disable-assert --disable-deprecated --enable-static --enable-delegate-build --without-magick-plus-plus --without-utilities --disable-docs --without-x --without-perl --without-python --without-magick-plus-plus --with-rsvg --with-jxl --with-quantum-depth=$depth --enable-hdri=$hdri $enable_64bit_channel_masks $disable_openmp $IMAGEMAGICK_OPTIONS --prefix=/tmp/ImageMagick
+  $CONFIGURE $CONFIGURE_OPTIONS --disable-shared --disable-opencl --disable-dpc --disable-assert --disable-deprecated --enable-static --enable-delegate-build --without-magick-plus-plus --without-utilities --disable-docs --without-x --without-perl --without-python --without-magick-plus-plus --with-rsvg $jxl_option --with-quantum-depth=$depth --enable-hdri=$hdri $enable_64bit_channel_masks $disable_openmp $IMAGEMAGICK_OPTIONS --prefix=/tmp/ImageMagick
   $MAKE install
 }
 

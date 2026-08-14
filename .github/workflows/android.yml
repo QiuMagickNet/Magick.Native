@@ -1,0 +1,51 @@
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+name: Build Android Native
+jobs:
+
+  android:
+    name: android ${{matrix.quantum}} (${{matrix.architecture}})
+    runs-on: ubuntu-24.04
+    container:
+      image: ubuntu:20.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [ arm64, x64 ]
+        quantum: [ Q8, Q16, Q16-HDRI ]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Clone ImageMagick libraries
+        run: ./checkout.sh --no-configure --dependencies-artifact android-${{matrix.architecture}}-static.zip
+        working-directory: src/ImageMagick
+
+      - name: Install build tools
+        run: ./install.build-tools.sh
+        working-directory: build/android-${{matrix.architecture}}
+
+      - name: Build ImageMagick
+        run: ../../../build/shared/build.imagemagick.sh android ${{matrix.architecture}} ${{matrix.quantum}} noOpenMP
+        working-directory: src/ImageMagick/ImageMagick
+
+      - name: Build Native
+        run: ../../build/shared/build.native.sh android ${{matrix.architecture}} ${{matrix.quantum}} noOpenMP
+        working-directory: src/Magick.Native
+
+      - name: Copy Native
+        run: ../../build/shared/copy.native.sh ../../artifacts android ${{matrix.architecture}} ${{matrix.quantum}} noOpenMP
+        working-directory: src/Magick.Native
+
+      - name: Upload library
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: android-${{matrix.quantum}}-${{matrix.architecture}}
+          path: artifacts
