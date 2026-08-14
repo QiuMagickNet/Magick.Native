@@ -5,7 +5,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 sudo apt-get update -qq
 
-sudo apt-get install -y -qq autoconf autopoint binutils curl gcc g++ git libtool locales pkg-config python python3-pip unzip > /dev/null
+sudo apt-get install -y -qq autoconf autopoint binutils curl gcc g++ git libtool locales pkg-config python3 python3-pip unzip > /dev/null
 
 locale-gen en_US.UTF-8
 
